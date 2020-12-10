@@ -56,4 +56,4 @@ class AgentNNet(Agent):
         pass
 
     def clone(self):
-        return AgentNNet(self.nnet, name=self.name)
+        return AgentNNet(self.nnet.clone(), name=self.name)

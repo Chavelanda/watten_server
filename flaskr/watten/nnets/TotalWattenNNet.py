@@ -52,4 +52,4 @@ class TotalWattenNNet(NNet):
         return model, _multi_gpu_model
 
     def clone(self):
-        return WattenNNet(self.observation_size_x, self.observation_size_y, 1, self.action_size, self.multi_gpu)
+        return TotalWattenNNet(self.observation_size_x, self.observation_size_y, 1, self.action_size, self.multi_gpu)

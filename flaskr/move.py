@@ -1,10 +1,12 @@
 from flask import (Blueprint, request, jsonify)
+import numpy as np
 
 from flaskr.watten.agents.AgentNNet import AgentNNet
 from flaskr.watten.games.sub_watten.SubWattenGame import WattenSubGame
 from flaskr.watten.games.total_watten.TotalWattenGame import TotalWattenGame
 from flaskr.watten.nnets.SubWattenNNet import SubWattenNNet
 from flaskr.watten.nnets.TotalWattenNNet import TotalWattenNNet
+
 
 bp = Blueprint('move', __name__, url_prefix='/move')
 
@@ -64,8 +66,34 @@ def get_move():
         game.sub_watten_agent_player_A = sub_agents[gen]
         game.sub_watten_agent_player_B = sub_agents[gen]
 
-        print(gen)
-        d = {"move": "Todo..."}
+        game.trueboard.init_world_to_state(-1, json["distributing"], json["score_a"], json["score_b"], json["hand_a"],
+                                           json["hand_b"], json["played_cards"], json["current_score_a"],
+                                           json["current_score_b"], json["current_prize"], json["is_last_move_raise"],
+                                           json["is_last_move_accepted_raise"], json["is_last_hand_raise_valid"],
+                                           json["first_card"], json["last_card"], json["rank"], json["suit"])
+
+        pi, v = total_agents[gen].predict(game, game.get_cur_player())
+
+        valid_moves = game.get_valid_moves(game.get_cur_player())
+        pi = pi*valid_moves
+
+        move = np.argmax(pi)
+        print(move)
+        if move == 0:
+            sub_game.trueboard.init_world_to_state(-1, json["distributing"], json["hand_a"],
+                                                   json["hand_b"], json["played_cards"], json["current_score_a"],
+                                                   json["current_score_b"], json["first_card"], json["last_card"],
+                                                   json["rank"], json["suit"])
+            s_pi, v = sub_agents[gen].predict(sub_game, sub_game.get_cur_player())
+            valid_moves = sub_game.get_valid_moves(sub_game.get_cur_player())
+            s_pi = s_pi*valid_moves
+
+            sub_move = np.argmax(s_pi)
+            print(sub_move)
+            d = {"move": sub_move}
+        else:
+            d = {"move": move+45}
+
         return jsonify(d)
 
 

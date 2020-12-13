@@ -1,5 +1,6 @@
 import numpy as np
 import struct
+import logging
 from flaskr.watten.games.sub_watten.SubWattenGame import WattenSubGame
 
 # allowed moves:
@@ -62,6 +63,7 @@ def int_to_binary(value, bits):
 class WorldTotalWatten(object):
 
     def __init__(self):
+        self.LOG = logging.getLogger('total_watten_logger')
         self.refresh()
 
     def refresh(self):

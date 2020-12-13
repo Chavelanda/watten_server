@@ -1,4 +1,5 @@
 import numpy as np
+import logging
 
 # allowed moves:
 # 0 - 32 -> play a card
@@ -56,6 +57,7 @@ def human_readable_card(card_id):
 class WorldSubWatten(object):
 
     def __init__(self):
+        self.LOG = logging.getLogger('sub_watten_logger')
         self.refresh()
 
     def refresh(self):

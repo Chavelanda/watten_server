@@ -1,17 +1,23 @@
-import sys
-
-sys.path.append('..')
-
-from flaskr.watten.nnets.NNet import NNet
-
 from keras.models import *
 from keras.layers import *
 from keras.optimizers import *
+from tensorflow.python.keras.backend import set_session
+import tensorflow as tf
 
-from keras.utils import multi_gpu_model
 
+class SubWattenNNet:
 
-class SubWattenNNet(NNet):
+    def __init__(self, obs_x, obs_y, obs_z, act_size, path_to_model):
+        self.observation_size_x = obs_x
+        self.observation_size_y = obs_y
+        self.observation_size_z = obs_z
+        self.action_size = act_size
+        self.sess = tf.Session()
+        self.graph = tf.get_default_graph()
+        set_session(self.sess)
+        self.model = self.build_model()
+        self.path_to_model = path_to_model
+        self.model.load_weights(self.path_to_model)
 
     def build_model(self):
         print(f"Build model with x {self.observation_size_x}, y {self.observation_size_y}, "
@@ -40,16 +46,17 @@ class SubWattenNNet(NNet):
 
         model = Model(inputs=input_boards, outputs=[pi, v])
 
-        if self.multi_gpu:
-            _multi_gpu_model = multi_gpu_model(model, gpus=self.multi_gpu_n)
-            _multi_gpu_model.compile(loss=['categorical_crossentropy', 'mean_squared_error'],
-                                     optimizer=Adam(learning_rate))
-        else:
-            _multi_gpu_model = None
-
         model.compile(loss=['categorical_crossentropy', 'mean_squared_error'], optimizer=Adam(learning_rate))
 
-        return model, _multi_gpu_model
+        return model
+
+    def predict(self, game, game_player):
+        observation = game.get_observation(game_player)
+        observation = observation[np.newaxis, :, :]
+
+        with self.graph.as_default():
+            set_session(self.sess)
+            return self.model.predict(observation)
 
     def clone(self):
-        return SubWattenNNet(self.observation_size_x, self.observation_size_y, 1, self.action_size, self.multi_gpu)
+        return SubWattenNNet(self.observation_size_x, self.observation_size_y, 1, self.action_size, self.path_to_model)

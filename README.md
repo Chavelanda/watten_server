@@ -1,8 +1,17 @@
 # WATTEN SERVER
 
-## Steps to launch the app (Windows)
+## Introduction
 
-To launch the application so that is visible only in local host do the following:
+Watten server is an application developed to serve a [Watten](https://en.wikipedia.org/wiki/Watten_(card_game)) game client. It has two main functions:
+
+- Given a state of the game and a difficulty level, it returns the best action to take based on a model related to the above mentioned difficulty level;
+- It is possible to insert and retrieve statistics of the game played against each difficulty level player.
+
+To learn more about this project take a look at the [mobile application](https://github.com/Chavelanda/watten_app) or at the [thesis project](https://github.com/Chavelanda/offen-watten-alpha-zero) aiming at applying an AlphaZero approach to Watten.
+
+## Get started (windows)
+
+#### To launch the application so that is visible only in local host do the following:
 
 1) Set where to find the application
 
@@ -28,7 +37,7 @@ set FLASK_DEBUG=0
 flask run
 ```
 
-If you want too launch the application so that is visible in LAN (not for production) substitute step 4 with the following:
+#### If you want too launch the application so that is visible in LAN (not for production) substitute step 4 with the following:
 
 4.b) Search the IPv4 address with *ipconfig*
 

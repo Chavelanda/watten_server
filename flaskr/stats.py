@@ -8,7 +8,7 @@ bp = Blueprint("stats", __name__, url_prefix='/stats')
 def get_stats():
     generation = int(request.args['gen'])
 
-    if 0 <= generation < 4:
+    if -1 <= generation < 4:
         db = get_db()
         stats = db.execute('SELECT * FROM stats WHERE generation = ?', (generation,)).fetchone()
 
@@ -33,7 +33,7 @@ def insert_stats():
 
     db = get_db()
 
-    if 0 <= generation < 4:
+    if -1 <= generation < 4:
         old_stats = db.execute('SELECT * FROM stats WHERE generation = ?', (generation,)).fetchone()
         print(old_stats)
         if old_stats is None:

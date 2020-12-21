@@ -1,6 +1,6 @@
 from flask import Flask
 import os
-from flaskr import (db, move)
+from flaskr import (db, move, stats)
 
 test_config = None
 
@@ -27,11 +27,10 @@ except OSError:
 # Initialize db and blueprints
 db.init_app(app)
 app.register_blueprint(move.bp)
+app.register_blueprint(stats.bp)
 
 
 # a simple page that says hello
 @app.route('/hello')
 def hello():
     return 'Hello, World!'
-
-

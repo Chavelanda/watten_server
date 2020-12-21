@@ -4,7 +4,7 @@ from flaskr.db import get_db
 bp = Blueprint("stats", __name__, url_prefix='/stats')
 
 
-@bp.route('/getStats')
+@bp.route('/get')
 def get_stats():
     generation = int(request.args['gen'])
 

@@ -57,7 +57,6 @@ def get_move():
         pi = pi*valid_moves
 
         move = np.argmax(pi)
-        print(move)
         if move == 0:
             sub_game.trueboard.init_world_to_state(-1, json["distributing"], json["hand_a"],
                                                    json["hand_b"], json["played_cards"], json["current_score_a"],
@@ -68,7 +67,6 @@ def get_move():
             s_pi = s_pi*valid_moves
 
             sub_move = np.argmax(s_pi)
-            print(sub_move)
             d = {"move": int(sub_move)}
         else:
             d = {"move": int(move+45)}

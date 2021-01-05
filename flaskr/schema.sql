@@ -1,5 +1,0 @@
-CREATE TABLE IF NOT EXISTS stats (
-    generation INTEGER PRIMARY KEY,
-    played INTEGER NOT NULL,
-    won INTEGER NOT NULL
-);

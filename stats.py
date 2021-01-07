@@ -33,6 +33,7 @@ def insert_stats():
         old_stat.played += 1
         old_stat.won += won
         db.session.commit()
+        return jsonify({'message': 'Stats updated correctly'}), 200
 
     return jsonify({'error': 'The generation does not exists'}), 400
 

@@ -9,41 +9,114 @@ Watten server is an application developed to serve a [Watten](https://en.wikiped
 
 To learn more about this project take a look at the [mobile application](https://github.com/Chavelanda/watten_app) or at the [thesis project](https://github.com/Chavelanda/offen-watten-alpha-zero) aiming at applying an AlphaZero approach to Watten.
 
-## Get started (windows)
+This server is a dockerized application implemented with Flask and communicating with a Postgres database. 
 
-#### To launch the application so that is visible only in local host do the following:
+## Get started
 
-1) Set where to find the application
+The files *database.env*, *.env* and *docker-compose.yml* are only needed for running the server locally.
 
-```
-set FLASK_APP=app.py
-```
+##### docker-compose.yml
 
-2) Set the environment to be development
+In the docker-compose.yml file we define two services: the web application (Flask app) and the database. For each of these service we have the correspondent environments variables written in the *.env files. The entrypoinst.sh file defines the commands that have to be run when building the application, i.e. initializing the db and then running the app.
 
-```
-set FLASK_ENV=development
-```
-
-3) Switch off debug mode (compulsory otherwise tensorflow does not work https://github.com/tensorflow/tensorflow/issues/34607)
-
-```
-set FLASK_DEBUG=0
-```
-
-4) Run the application
-
-```
-flask run
-```
-
-#### If you want too launch the application so that is visible in LAN (not for production) substitute step 4 with the following:
-
-4.b) Search the IPv4 address with *ipconfig*
-
-5.b) Run the application specifying the host (https://stackoverflow.com/questions/7023052/configure-flask-dev-server-to-be-visible-across-the-network)
+```yaml
+version: '3.9'
+services:
+  web:
+    build: .
+    entrypoint: /entrypoint.sh
+    ports:
+      - "5000:5000"
+    env_file: .env
+    depends_on:
+      - db
+    volumes:
+      - .:/opt/webapp
+  db:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    env_file: database.env
 
 ```
-flask run --host=192.168.x.x
+
+The web service itself is bulit using the Dockerfile at the project Root:
+
+```
+FROM python:3.6
+
+WORKDIR usr/src/flask_app
+
+COPY requirements.txt .
+
+RUN pip install -r requirements.txt
+
+COPY ./entrypoint.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 5000
+
+COPY . .
+
+ENV  APP_SETTINGS="config.ProductionConfig"
+
+CMD gunicorn --bind 0.0.0.0:$PORT wsgi:server
+
 ```
 
+The Dockerfile contains the instructions to install the requirements of the app, makes the entrypoint.sh file executable, exposes port 5000 (only needed for local running), sets the environment variables (needed for heroku deployment) and runs the app (locally this is substituted by commands in entrypoint.sh)
+
+## Run locally
+
+In order to run the application locally you must have installed docker and docker-compose.
+
+Run the command
+
+```bash
+docker compose-up
+```
+
+The app will start at http://localhost:5000/. By clicking the link you should see a simple *hello world!* text.
+
+## Deploy to heroku
+
+In order to deploy the application to heroku you must have installed heroku-cli and docker.
+
+Login to container registry
+
+```bash
+heroku container:login
+```
+
+Create the heroku application
+
+```bash
+heroku create name_of_your_app
+```
+
+Add Postgres addon to heroku
+
+```
+heroku addons:create heroku-postgresql:hobby-dev --app name_of_your_application
+```
+
+Push the web image to heroku
+
+```
+heroku container:push web
+```
+
+Release the application
+
+```
+heroku container:release web
+```
+
+Open it, you should get the usual *hello world!* answer
+
+```
+heroku open
+```
+
+Heroku will automatically set the environment variables $PORT and $DATABASE_URL.

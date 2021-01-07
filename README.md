@@ -123,10 +123,22 @@ Heroku will automatically set the environment variables $PORT and $DATABASE_URL.
 
 Before the application can really work you have to initialize the database and run the migrations.
 
+In order to do this first run bash in your heroku app.
+
 ```shell
-heroku run python manage.py db init
-heroku run python manage.py db migrate
-heroku run python manage.py db upgrade
-heroku run python stats.py
+heroku run bash
 ```
 
+Then make the init_db.sh file executable
+
+```bash
+chmod +x init_db.sh
+```
+
+Finally run the init_db.sh bash file
+
+```bash
+./init_db.sh
+```
+
+Exit the bash. Now the database is initialized.

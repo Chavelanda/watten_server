@@ -2,6 +2,7 @@ version: '3.9'
 services:
   web:
     build: .
+    entrypoint: /entrypoint.sh
     ports:
       - "5000:5000"
     env_file: .env

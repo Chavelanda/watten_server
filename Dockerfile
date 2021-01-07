@@ -16,6 +16,4 @@ COPY . .
 
 ENV  APP_SETTINGS="config.ProductionConfig"
 
-ENTRYPOINT ["/entrypoint.sh"]
-
-CMD ["sh"]
+CMD gunicorn --bind 0.0.0.0:$PORT wsgi:server

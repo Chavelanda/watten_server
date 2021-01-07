@@ -1,9 +1,9 @@
 from flask import (Blueprint, request, jsonify)
-from models import Stats
 from app import db
 
 stats_bp = Blueprint("stats", __name__, url_prefix='/stats')
 
+from models import Stats
 
 # Initialization of rows in the table stats
 if __name__ == '__main__':

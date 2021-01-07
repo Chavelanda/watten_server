@@ -2,13 +2,15 @@ import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from move import bp
-from models import Stats
 
 server = Flask(__name__)
 
 server.config.from_object(os.environ['APP_SETTINGS'])
 server.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(server)
+
+
+from models import Stats
 
 server.register_blueprint(bp)
 

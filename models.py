@@ -1,7 +1,7 @@
 from app import db
 
 
-class Stats(db.model):
+class Stats(db.Model):
     __tablename__ = 'stats'
 
     generation = db.Column(db.Integer, primary_key=True)

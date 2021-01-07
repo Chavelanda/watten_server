@@ -42,7 +42,7 @@ services:
 
 The web service itself is bulit using the Dockerfile at the project Root:
 
-```
+```dockerfile
 FROM python:3.6
 
 WORKDIR usr/src/flask_app
@@ -65,7 +65,7 @@ CMD gunicorn --bind 0.0.0.0:$PORT wsgi:server
 
 ```
 
-The Dockerfile contains the instructions to install the requirements of the app, makes the entrypoint.sh file executable, exposes port 5000 (only needed for local running), sets the environment variables (needed for heroku deployment) and runs the app (locally this is substituted by commands in entrypoint.sh)
+The Dockerfile contains the instructions to install the requirements of the app, makes the entrypoint.sh file executable, exposes port 5000 (only needed for local running), sets the environment variables (needed for heroku deployment) and run the app from (only for heroku deployment, locally commands tu run the app are set in entrypoint.sh)
 
 ## Run locally
 
@@ -97,26 +97,36 @@ heroku create name_of_your_app
 
 Add Postgres addon to heroku
 
-```
+```shell
 heroku addons:create heroku-postgresql:hobby-dev --app name_of_your_application
 ```
 
 Push the web image to heroku
 
-```
+```shell
 heroku container:push web
 ```
 
 Release the application
 
-```
+```shell
 heroku container:release web
 ```
 
 Open it, you should get the usual *hello world!* answer
 
-```
+```shell
 heroku open
 ```
 
 Heroku will automatically set the environment variables $PORT and $DATABASE_URL.
+
+Before the application can really work you have to initialize the database and run the migrations.
+
+```shell
+heroku run python manage.py db init
+heroku run python manage.py db migrate
+heroku run python manage.py db upgrade
+heroku run python stats.py
+```
+

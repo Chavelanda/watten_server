@@ -6,8 +6,8 @@ from watten.models.HandWattenNNet import HandWattenNNet
 
 bp = Blueprint('move', __name__, url_prefix='/move')
 
-generations = ["watten/models/model_updated_3.h5", "watten/models/model_updated_4.h5",
-               "watten/models/model_updated_6.h5", "watten/models/model_updated_21.h5"]
+generations = ["watten/models/model_updated_21.h5", "watten/models/model_updated_200.h5",
+               "watten/models/model_updated_420.h5", "watten/models/best.h5"]
 
 models = []
 
@@ -47,5 +47,5 @@ def get_move():
         move = np.argmax(pi)
 
         answer = {"move": int(move)}
-        
+
         return jsonify(answer)

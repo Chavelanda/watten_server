@@ -2,6 +2,7 @@ import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from move import bp
+from models import Stats
 
 server = Flask(__name__)
 

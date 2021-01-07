@@ -9,7 +9,7 @@ from models import Stats
 @stats_bp.route('/get/<gen_>')
 def get_stats(gen_):
 
-    if -1 <= gen_ < 4:
+    if -1 <= int(gen_) < 4:
         try:
             stat = Stats.query.filter_by(generation=gen_).first()
             return jsonify(stat.serialize())

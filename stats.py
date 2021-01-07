@@ -19,6 +19,23 @@ def get_stats(gen_):
     return jsonify({'error': 'The generation does not exists'}), 400
 
 
+@stats_bp.route('/insert', methods=['POST'])
+def insert_stats():
+    json = request.json
+    gen_ = json['generation']
+    won = json['won']
+
+    print("Generation " + str(gen_))
+    print("Won " + str(won))
+
+    if -1 <= gen_ < 4:
+        old_stat = Stats.query.filter_by(generation=gen_).first()
+        old_stat.played += 1
+        old_stat.won += won
+        db.session.commit()
+
+    return jsonify({'error': 'The generation does not exists'}), 400
+
 
 # Initialization of rows in the table stats
 if __name__ == '__main__':

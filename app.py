@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 
 server = Flask(__name__)
@@ -17,4 +17,4 @@ server.register_blueprint(stats_bp)
 
 @server.route('/')
 def hello_world():
-    return 'hello world!'
+    return render_template('mandi.html')

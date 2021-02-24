@@ -1,5 +1,5 @@
 import numpy as np
-from versions.hand_watten.hand_watten import WorldHandWatten, InvalidInputError, get_rs
+from watten.games.hand_watten import WorldHandWatten, InvalidInputError, get_rs
 
 
 class CNNHandWatten(WorldHandWatten):

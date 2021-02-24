@@ -1,18 +1,29 @@
 from __future__ import print_function
-import watten.games.hand_watten as watten
+import watten.games.hand_watten as hand_watten
+import watten.games.cnn_hand_watten as cnnwatten
 import numpy as np
+import math
 
 from watten.games.Game import Game
 
 
 class HandWattenGame(Game):
-    def __init__(self):
-        self.trueboard = watten.WorldHandWatten()
+    def __init__(self, cnn=False):
+        super(HandWattenGame, self).__init__()
+        self.cnn = cnn
+        if not cnn:
+            self.trueboard = hand_watten.WorldHandWatten()
+        else:
+            self.trueboard = cnnwatten.CNNHandWatten()
+
         self.players = {1: 0, -1: 1}  # player NUMBER 1 is [0] and player NUMBER -1 is [1]
         self.players_inv = {0: 1, 1: -1}
 
     def reset(self):
-        self.trueboard = watten.WorldHandWatten()
+        if not self.cnn:
+            self.trueboard = hand_watten.WorldHandWatten()
+        else:
+            self.trueboard = cnnwatten.CNNHandWatten()
 
     def get_cur_player(self):
         player = self.trueboard.get_player()
@@ -25,7 +36,10 @@ class HandWattenGame(Game):
         return 50
 
     def get_observation_size(self):
-        return 236, 1
+        if self.cnn:
+            return 17, 17, 19
+        else:
+            return 198, 1
 
     def make_move(self, action):
         current_player = self.trueboard.current_player
@@ -34,10 +48,12 @@ class HandWattenGame(Game):
             if self.trueboard.winning_player is None:
                 raise Exception("Winning player cannot be None if game is ended")
 
+            x = self.trueboard.current_game_prize*1.0/4
+
             if self.trueboard.winning_player == current_player:
-                return self.trueboard.current_game_prize/1.0, self.players[next_player]
+                return x/(math.sqrt(1+x**2)), self.players[next_player]
             else:
-                return -self.trueboard.current_game_prize/1.0, self.players[next_player]
+                return -x/(math.sqrt(1+x**2)), self.players[next_player]
         else:
             return 0.0, self.players[next_player]
 
@@ -60,11 +76,13 @@ class HandWattenGame(Game):
         if self.trueboard.winning_player is None:
             return 0.0
 
+        x = self.trueboard.current_game_prize*1.0/4
+
         if self.trueboard.is_game_end():
             if self.trueboard.winning_player == player_curr:
-                return self.trueboard.current_game_prize/1.0
+                return x/(math.sqrt(1+x**2))
             else:
-                return -self.trueboard.current_game_prize/1.0
+                return -x/(math.sqrt(1+x**2))
 
         raise Exception("Inconsistent score")
 
@@ -86,7 +104,7 @@ class HandWattenGame(Game):
         return ""
 
     def clone(self):
-        cloned_game = HandWattenGame()
+        cloned_game = HandWattenGame(self.cnn)
         cloned_game.trueboard = self.trueboard.deepcopy()
         return cloned_game
 
@@ -114,7 +132,7 @@ class HandWattenGame(Game):
 
         return {
             'player_hand': player_hand,
-            'opponent_hand': opponent_hand,  # TODO remove (needs frontend refactoring)
+            'opponent_hand': opponent_hand,
             'first_card_deck': first_card_deck,
             'last_card_deck': last_card_deck,
             'current_game_player_A_score': current_game_player_A_score,

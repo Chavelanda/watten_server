@@ -2,7 +2,6 @@ from flask import (Blueprint, request, jsonify)
 import numpy as np
 
 from watten.games.HandWattenGame import HandWattenGame
-from watten.models.HandWattenNNet import HandWattenNNet
 from watten.models.DefaultFFNN import DefaultFFNN
 from watten.models.CNN import CNN
 

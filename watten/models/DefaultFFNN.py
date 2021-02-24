@@ -12,6 +12,7 @@ class DefaultFFNN:
         self.observation_size_y = observation_size_y
         self.observation_size_z = observation_size_z
         self.action_size = action_size
+        self.path_to_model = path_to_model
 
         devices = tf.config.list_physical_devices('GPU')
         print(devices)
@@ -66,4 +67,4 @@ class DefaultFFNN:
             return pi[0], v[0][0]
 
     def clone(self):
-        return DefaultFFNN(self.observation_size_x, self.observation_size_y, 1, self.action_size)
+        return DefaultFFNN(self.observation_size_x, self.observation_size_y, 1, self.action_size, self.path_to_model)

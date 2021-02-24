@@ -1,8 +1,8 @@
-import numpy as np
+from keras.models import *
+from keras.layers import *
+from keras.optimizers import *
+from tensorflow.python.keras.backend import set_session
 import tensorflow as tf
-from tensorflow.keras.layers import Dense, BatchNormalization, Activation, Dropout, Flatten, Reshape, Input
-from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import Adam
 
 
 class DefaultFFNN:
@@ -14,16 +14,11 @@ class DefaultFFNN:
         self.action_size = action_size
         self.path_to_model = path_to_model
 
-        devices = tf.config.list_physical_devices('GPU')
-        print(devices)
-
-        if len(devices) > 0:
-            tf.config.set_soft_device_placement(True)
-            tf.debugging.set_log_device_placement(True)
-
+        self.sess = tf.Session()
+        self.graph = tf.get_default_graph()
+        set_session(self.sess)
         self.model = self.build_model()
-        self.model.load_weights(path_to_model)
-        self.graph_model = tf.function(self.model)
+        self.model.load_weights(self.path_to_model)
 
     def build_model(self):
         print(f"Build model with x {self.observation_size_x}, y {self.observation_size_y}, "
@@ -58,13 +53,13 @@ class DefaultFFNN:
 
         return model
 
-    def predict(self, observation):
-        pi, v = self.graph_model(observation, training=False)
+    def predict(self, game, game_player):
+        observation = game.get_observation(game_player)
+        observation = observation[np.newaxis, :, :]
 
-        if np.isscalar(v[0]):
-            return pi[0], v[0]
-        else:
-            return pi[0], v[0][0]
+        with self.graph.as_default():
+            set_session(self.sess)
+            return self.model.predict(observation)
 
     def clone(self):
         return DefaultFFNN(self.observation_size_x, self.observation_size_y, 1, self.action_size, self.path_to_model)

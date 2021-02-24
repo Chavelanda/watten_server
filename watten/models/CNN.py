@@ -1,8 +1,9 @@
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Conv2D, MaxPool2D, Flatten, Dense, BatchNormalization, Dropout
-from tensorflow.keras.optimizers import Adam
+from keras.models import Model
+from keras.layers import Input, Conv2D, MaxPool2D, Flatten, Dense, BatchNormalization, Dropout
+from keras.optimizers import Adam
+from tensorflow.python.keras.backend import set_session
 
 
 class CNN:
@@ -14,16 +15,11 @@ class CNN:
         self.action_size = action_size
         self.path_to_model = path_to_model
 
-        devices = tf.config.list_physical_devices('GPU')
-        print(devices)
-
-        if len(devices) > 0:
-            tf.config.set_soft_device_placement(True)
-            tf.debugging.set_log_device_placement(True)
-
+        self.sess = tf.Session()
+        self.graph = tf.get_default_graph()
+        set_session(self.sess)
         self.model = self.build_model()
-        self.model.load_weights(path_to_model)
-        self.graph_model = tf.function(self.model)
+        self.model.load_weights(self.path_to_model)
 
     def build_model(self):
         print(f"Build model with x {self.observation_size_x}, y {self.observation_size_y}, "
@@ -57,13 +53,13 @@ class CNN:
 
         return model
 
-    def predict(self, observation):
-        pi, v = self.graph_model(observation, training=False)
+    def predict(self, game, game_player):
+        observation = game.get_observation(game_player)
+        observation = observation[np.newaxis, :, :, :]
 
-        if np.isscalar(v[0]):
-            return pi[0], v[0]
-        else:
-            return pi[0], v[0][0]
+        with self.graph.as_default():
+            set_session(self.sess)
+            return self.model.predict(observation)
 
     def clone(self):
         return CNN(self.observation_size_x, self.observation_size_y, self.observation_size_z, self.action_size, self.path_to_model)

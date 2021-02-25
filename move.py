@@ -35,7 +35,8 @@ def get_move():
                                                  json["played_cards"], json["current_score_a"], json["current_score_b"],
                                                  json["current_prize"], json["is_last_move_raise"],
                                                  json["is_last_move_accepted_raise"], json["is_last_hand_raise_valid"],
-                                                 json["first_card"], json["last_card"], json["rank"], json["suit"])
+                                                 json["first_card"], json["last_card"], json["rank"], json["suit"],
+                                                 json["started_raising"])
 
         # Ask to the indicated model to make a prediction
         pi, _ = models[gen].predict(games[gen], games[gen].get_cur_player())

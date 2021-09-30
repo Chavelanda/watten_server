@@ -1,24 +1,38 @@
 from flask import (Blueprint, request, jsonify)
 import numpy as np
 
-from watten.games.HandWattenGame import HandWattenGame
 from watten.models.DefaultFFNN import DefaultFFNN
-from watten.models.CNN import CNN
 
 bp = Blueprint('move', __name__, url_prefix='/move')
 
-cnn_model = "watten/models/cnn_199.h5"
+# Todo: Upload best model and use that one
+model_path = "watten/models/ffnn_199.h5"
 
-ffnn_model = "watten/models/ffnn_199.h5"
 
-games = [HandWattenGame(), HandWattenGame(cnn=True)]
+model = DefaultFFNN(198, 1, 1, 50, model_path)
 
-x, y = games[0].get_observation_size()
 
-x1, y1, z1 = games[1].get_observation_size()
+# c_v ranges from -1 to 1, while the trick played range from 0 to 4
+def decide_about_raising(continuous_value, tricks_played, lower_range=0.1, upper_range=0.8):
+    # normalize continuous value in range 0 - 1. The make to the power of 5
+    norm_cv = ((continuous_value+1) / 2)**5
 
-models = [DefaultFFNN(x, y, 1, games[0].get_action_size(), ffnn_model),
-          CNN(x1, y1, z1, games[1].get_action_size(), cnn_model)]
+    # normalize tricks in range 0.2 - 1
+    norm_tricks = 0.2 + 0.8*tricks_played/4
+
+    probability = norm_tricks*norm_cv
+
+    # normalize probability in range lower-range - upper-range
+    norm_probability = lower_range + (upper_range-lower_range)*probability
+
+    coin = np.random.choice(2, p=[1-norm_probability, norm_probability])
+
+    return coin == 1
+
+
+# returns true if player should accept raise, false otherwise
+def decide_about_accepting_raise(continuous_value, tricks_played):
+    return not decide_about_raising(-continuous_value, tricks_played, lower_range=0.02, upper_range=0.8)
 
 
 @bp.route('/', methods=['POST', 'GET'])
@@ -29,22 +43,99 @@ def get_move():
         # Take data from json
         json = request.json
 
-        gen = json["generation"]
+        # Composing observation from json
+        observation = np.zeros((198,))
 
-        games[gen].trueboard.init_world_to_state(-1, json["distributing"], json["hand_a"], json["hand_b"],
-                                                 json["played_cards"], json["current_score_a"], json["current_score_b"],
-                                                 json["current_prize"], json["is_last_move_raise"],
-                                                 json["is_last_move_accepted_raise"], json["is_last_hand_raise_valid"],
-                                                 json["first_card"], json["last_card"], json["rank"], json["suit"],
-                                                 json["started_raising"])
+        # first card deck
+        observation[json["first_card"]] = 1
 
-        # Ask to the indicated model to make a prediction
-        pi, _ = models[gen].predict(games[gen], games[gen].get_cur_player())
+        # last card deck
+        index = 33
+        if json["distributing"] == -1:
+            observation[index + json["last_card"]] = 1
 
-        # Filter the prediction with the valid actions
-        valid_moves = games[gen].get_valid_moves(games[gen].get_cur_player())
+        # cards in hand
+        index += 33  # 66
+        player_hand = json["hand_b"]
+        for card in player_hand:
+            observation[index + card] = 1
+
+        # picked rank
+        index += 33  # 99
+        rank = json["rank"]
+        if rank is not None:
+            observation[index + rank] = 1
+
+        # picked suit
+        index += 9  # 108
+        suit = json["suit"]
+        if suit is not None:
+            observation[index + suit] = 1
+
+        played_cards = json["played_cards"]
+        # last played card
+        index += 4  # 112
+        if len(played_cards) % 2 == 1:
+            observation[index + played_cards[-1]] = 1
+
+        # played cards
+        index += 33  # 145
+        for card in played_cards:
+            observation[index + card] = 1
+
+        # points current hand current player
+        index += 33  # 178
+        points_current_hand_current = json["current_score_b"]
+        if points_current_hand_current != 0:
+            observation[index + points_current_hand_current - 1] = 1
+
+        # points current hand opponent player
+        index += 2  # 180
+        points_current_hand_opponent = json["current_score_a"]
+        if points_current_hand_opponent != 0:
+            observation[index + points_current_hand_opponent - 1] = 1
+
+        index += 2  # 182
+        if json["is_last_move_raise"]:
+            observation[index] = 1
+
+        index += 1  # 183
+        if json["is_last_move_accepted_raise"]:
+            observation[index] = 1
+
+        index += 1  # 184
+        if json["is_last_hand_raise_valid"] is None:
+            observation[index] = 0
+        else:
+            observation[index] = 1
+
+        index += 1  # 185
+        if json["current_prize"] - 3 >= 0:
+            observation[index + json["current_prize"] - 3] = 1
+
+        # total size = 185 + 13 = 198
+
+        observation = observation.reshape((198, 1))
+
+        pi, v = model.predict(observation)
+
+        valid_moves = json["valid_moves"]
+
+        # Deterministic raising
+        if valid_moves[48] == 1:
+            if not decide_about_accepting_raise(v, json["tricks_played"]):
+                pi[47] = 1.5
+
+        if valid_moves[46] == 1:
+            if decide_about_raising(v, json["tricks_played"]):
+                pi[46] = 1.2
+            else:
+                pi[48] = 1.2
 
         pi = pi*valid_moves
+
+        if np.sum(pi) == 0:
+            pi = valid_moves
 
         # Return the best possible action
         move = np.argmax(pi)

@@ -53,9 +53,8 @@ class DefaultFFNN:
 
         return model
 
-    def predict(self, game, game_player):
-        observation = game.get_observation(game_player)
-        observation = observation[np.newaxis, :, :]
+    # Todo: Avoid using the game. Make predict: given input (observation) -> return output (prediction)
+    def predict(self, observation):
 
         with self.graph.as_default():
             set_session(self.sess)

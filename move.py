@@ -5,9 +5,7 @@ from watten.models.DefaultFFNN import DefaultFFNN
 
 bp = Blueprint('move', __name__, url_prefix='/move')
 
-# Todo: Upload best model and use that one
-model_path = "watten/models/ffnn_199.h5"
-
+model_path = "watten/models/model_updated_99.h5"
 
 model = DefaultFFNN(198, 1, 1, 50, model_path)
 
@@ -116,10 +114,18 @@ def get_move():
         # total size = 185 + 13 = 198
 
         observation = observation.reshape((198, 1))
+        observation = observation[np.newaxis, :, :]
 
         pi, v = model.predict(observation)
 
-        valid_moves = json["valid_moves"]
+        # transform app valid moves into suitable valid moves for the python game repr
+        valid_moves_app = np.array(json["valid_moves"])
+        valid_moves = np.zeros((50,))
+
+        valid_moves[:33] = valid_moves_app[:33]
+        valid_moves[33:42] = valid_moves_app[33]
+        valid_moves[42:46] = valid_moves_app[34]
+        valid_moves[46:] = valid_moves_app[35:]
 
         # Deterministic raising
         if valid_moves[48] == 1:

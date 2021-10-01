@@ -53,7 +53,6 @@ class DefaultFFNN:
 
         return model
 
-    # Todo: Avoid using the game. Make predict: given input (observation) -> return output (prediction)
     def predict(self, observation):
 
         with self.graph.as_default():

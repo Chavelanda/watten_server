@@ -117,6 +117,7 @@ def get_move():
         observation = observation[np.newaxis, :, :]
 
         pi, v = model.predict(observation)
+        pi[46:] = 0
 
         # transform app valid moves into suitable valid moves for the python game repr
         valid_moves_app = np.array(json["valid_moves"])

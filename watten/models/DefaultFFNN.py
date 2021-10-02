@@ -57,7 +57,12 @@ class DefaultFFNN:
 
         with self.graph.as_default():
             set_session(self.sess)
-            return self.model.predict(observation)
+            pi, v = self.model.predict(observation)
+
+            if np.isscalar(v[0]):
+                return pi[0], v[0]
+            else:
+                return pi[0], v[0][0]
 
     def clone(self):
         return DefaultFFNN(self.observation_size_x, self.observation_size_y, 1, self.action_size, self.path_to_model)

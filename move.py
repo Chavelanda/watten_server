@@ -127,7 +127,9 @@ def get_move():
         valid_moves[42:46] = valid_moves_app[34]
         valid_moves[46:] = valid_moves_app[35:]
 
-        # Deterministic raising
+        # Deterministic raising:
+        #   - First decide whether to fold
+        #   - Then decide whether to raise
         if valid_moves[48] == 1:
             if not decide_about_accepting_raise(v, json["tricks_played"]):
                 pi[47] = 1.5
